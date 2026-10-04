@@ -1,13 +1,20 @@
 const { Pool } = require('pg');
 const env = require('./env');
 
-const pool = new Pool({
-  host: env.db.host,
-  port: env.db.port,
-  database: env.db.name,
-  user: env.db.user,
-  password: String(env.db.password || 'postgres'),
-});
+const poolConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    }
+  : {
+      host: env.db.host,
+      port: env.db.port,
+      database: env.db.name,
+      user: env.db.user,
+      password: String(env.db.password || 'postgres'),
+    };
+
+const pool = new Pool(poolConfig);
 
 // Log connection status once on startup
 pool.on('connect', () => {

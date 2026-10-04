@@ -213,6 +213,52 @@ npm test
 
 ---
 
+## 🌐 Cloud Deployment Guide
+
+The application is pre-configured for seamless 1-click cloud deployment:
+
+### Backend Deployment (Render)
+1. **Create Render PostgreSQL Database**:
+   - Go to [Render Dashboard](https://dashboard.render.com/) -> **New** -> **PostgreSQL**.
+   - Name it `storerating-db`. Copy the **Internal Database URL** (or External Database URL if needed).
+2. **Deploy Express Web Service**:
+   - In Render, click **New** -> **Web Service** and link this repository (`Roxiler-Assessment`).
+   - Configure settings:
+     - **Root Directory**: `server`
+     - **Build Command**: `npm install`
+     - **Start Command**: `npm start`
+   - Add Environment Variables:
+     - `DATABASE_URL`: *(Your Render PostgreSQL connection string)*
+     - `JWT_SECRET`: *(A secure random string, e.g. `openssl rand -hex 32`)*
+     - `JWT_REFRESH_SECRET`: *(A secure random string)*
+     - `PORT`: `5000`
+     - `NODE_ENV`: `production`
+3. **Run Database Migrations & Seeds**:
+   - In the Render Web Service dashboard, go to the **Shell** tab and run:
+     ```bash
+     npm run migrate
+     npm run seed
+     ```
+   - Your backend will now be live at `https://<your-render-app>.onrender.com`.
+
+---
+
+### Frontend Deployment (Vercel)
+1. **Import Repository to Vercel**:
+   - Go to [Vercel Dashboard](https://vercel.com/) -> **Add New** -> **Project**.
+   - Import your `Roxiler-Assessment` GitHub repository.
+2. **Configure Project Settings**:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Click *Edit* and select `client`.
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+3. **Environment Variables**:
+   - Add `VITE_API_URL`: `https://<your-render-app>.onrender.com/api`
+4. **Deploy**:
+   - Click **Deploy**. Vercel will bundle the React SPA. Single Page Application route rewrites are automatically handled by `client/vercel.json`.
+
+---
+
 ## 📜 Detailed Build Log
 
 For a detailed step-by-step log of design choices, architectural decisions, and concepts to revise, check [`docs/BUILD_LOG.md`](./docs/BUILD_LOG.md).

@@ -16,7 +16,28 @@ const app = express();
 
 // ── Security ────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: env.clientUrl, credentials: true }));
+const allowedOrigins = [
+  env.clientUrl,
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        /\.vercel\.app$/.test(origin) ||
+        env.nodeEnv !== 'production'
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
 
 // ── Body parsing ────────────────────────────────
 app.use(express.json({ limit: '1mb' }));

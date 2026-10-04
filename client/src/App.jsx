@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import CursorParticles from './components/CursorParticles';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -69,7 +70,8 @@ function App() {
 
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<RootRedirect />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/dashboard" element={<RootRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/unauthorized" element={<Unauthorized />} />

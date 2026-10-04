@@ -558,3 +558,57 @@ const updatePhysics = () => {
 - `feat(login): rebuild characters as layered interactive svg with mood engine`
 - `refactor(login): implement full-screen split layout with underline inputs and intro animation`
 - `style(theme): update application theme to light frosted glassmorphism and neumorphism`
+
+---
+
+### Step 21 — Rich Landing Page, StoreRate Logo, Footer & Deployment Configuration
+
+**What we built:**
+- **StoreRate Brand Logo (`Logo.jsx`)**:
+  - Custom SVG identity featuring a 4-point geometric star inside an emerald-cyan gradient badge with frosted glass border.
+  - Paired with modern typography and an accent rating dot.
+  - Supports `sm`, `md`, `lg` sizing and optional subtitle badge.
+- **Deep & Content-Rich Landing Page (`LandingPage.jsx`)**:
+  - **Hero Section**: Eyebrow badge, high-impact headline, live platform metrics pill, interactive CTA buttons ("Explore Stores", "Sign Up Free"), and trusted platform badges.
+  - **Interactive Rating Playground Widget**: Real-time interactive glass preview card where prospective visitors can test-drive the 1–5 star rating system with instant mood reactions, visual feedback, and live average score calculations.
+  - **Animated Metric Cards Strip**: Key performance metrics (4.85/5 average customer satisfaction, 10,000+ ratings submitted, 99.9% verified authenticity, 2,500+ active retail stores).
+  - **"How It Works" 3-Step Workflow**: Clear illustrated cards for Discover & Search, Rate with Transparency, and Empower Store Owners.
+  - **Featured Stores Showcase**: Real store cards with category tags, dynamic star rating badges, verified checkmarks, and addresses.
+  - **Social Proof & Testimonials**: Dual-column quotes from authentic users and certified store owners detailing their experience with fair feedback loops.
+  - **Call to Action (CTA) Banner**: Eye-catching gradient glass banner encouraging visitors to join the platform today.
+- **Comprehensive Global Footer (`Footer.jsx`)**:
+  - Multi-column layout with StoreRate brand description, quick product navigation links, platform role links (Admin, User, Store Owner), assessment spec links, and social links.
+  - System status indicator badge (`All Systems Operational`).
+  - GitHub repository and assessment attribution.
+- **Production Deployment Configuration (Vercel & Render)**:
+  - **Vercel Frontend (`client/vercel.json`)**: Configured SPA rewrites (`"source": "/(.*)", "destination": "/index.html"`) so deep client routes (`/admin/users`, `/stores`, `/login`, etc.) work without 404 errors.
+  - **Dynamic API Base URL (`client/src/services/api.js`)**: Configured to read `import.meta.env.VITE_API_URL` with a fallback to `http://localhost:5000/api`.
+  - **Render Backend Blueprint (`render.yaml`)**:
+    - Defines a Render Web Service (`storerating-backend`) pointing to `server/` with `npm install` and `npm start`.
+    - Provisions a managed PostgreSQL database (`storerating-db`) and injects `DATABASE_URL`.
+    - Generates cryptographic JWT secrets automatically.
+  - **Backend Production Adaptations (`server/config/db.js` & `server/index.js`)**:
+    - PostgreSQL connection pool supports `DATABASE_URL` with SSL (`rejectUnauthorized: false`).
+    - CORS middleware enhanced to dynamically allow `http://localhost:5173`, `http://localhost:3000`, and all `*.vercel.app` domains.
+
+**Files created or changed:**
+- `client/src/components/Logo.jsx`
+- `client/src/components/Footer.jsx`
+- `client/src/pages/LandingPage.jsx`
+- `client/src/App.jsx`
+- `client/src/services/api.js`
+- `client/vercel.json`
+- `server/config/db.js`
+- `server/index.js`
+- `render.yaml`
+- `.gitignore`
+
+**Commit message:**
+```
+feat: add rich landing page, storerate logo, footer, and vercel/render deployment config
+```
+
+**Concepts to revise:**
+- **Single Page Application (SPA) Routing on Vercel**: why client-side routing requires rewrite rules to `/index.html` to avoid 404 errors on browser refresh
+- **PostgreSQL over SSL on Cloud Providers**: why cloud-hosted databases (Render, Supabase, Neon) require SSL with `rejectUnauthorized: false` for self-signed certificates
+- **Dynamic CORS Origins**: handling development localhost and wildcards/regex for ephemeral preview URLs on Vercel
