@@ -1,25 +1,25 @@
 :root {
-  /* Color Palette - Dark Glass Theme */
-  --bg-primary: #0a0d14;
-  --bg-secondary: #111726;
-  --bg-card: rgba(18, 24, 38, 0.7);
-  --bg-card-hover: rgba(26, 35, 56, 0.8);
-  --bg-input: rgba(13, 17, 27, 0.85);
-  --bg-modal: rgba(15, 20, 32, 0.95);
+  /* Frosted Glassmorphism & Neumorphism Theme (Matching Reference) */
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #e2e8f0;
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-card-hover: rgba(255, 255, 255, 0.9);
+  --bg-input: rgba(255, 255, 255, 0.85);
+  --bg-modal: rgba(255, 255, 255, 0.95);
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(226, 232, 240, 0.8);
   --border-focus: #6366f1;
-  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-glass: rgba(255, 255, 255, 0.9);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
   --text-muted: #64748b;
-  --text-inverted: #0f172a;
+  --text-inverted: #ffffff;
 
   /* Accent Colors */
   --primary: #6366f1;
   --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.35);
+  --primary-glow: rgba(99, 102, 241, 0.25);
   
   --accent-purple: #8b5cf6;
   --accent-orange: #ff7849;
@@ -28,9 +28,9 @@
   --accent-rose: #f43f5e;
 
   /* Character Brand Colors */
-  --char-purple: #6c28fe;
+  --char-purple: #6726fe;
   --char-orange: #ff6b35;
-  --char-black: #1e1e24;
+  --char-black: #1c1c22;
   --char-yellow: #f3c623;
 
   /* Typography */
@@ -39,17 +39,17 @@
 
   /* Radii */
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
   --radius-full: 9999px;
 
-  /* Shadows & Glass Depth */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 25px var(--primary-glow);
+  /* Glassmorphism & Neumorphic Dual Shadows */
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 16px 36px -10px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.02), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  --shadow-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  --shadow-glow: 0 0 20px var(--primary-glow);
 
-  --glass-blur: blur(16px);
+  --glass-blur: blur(24px);
   --glass-border: 1px solid var(--border-glass);
 
   /* Transitions */

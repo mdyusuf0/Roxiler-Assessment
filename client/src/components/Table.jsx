@@ -25,7 +25,7 @@ const Table = ({
       >
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ background: 'rgba(255, 255, 255, 0.03)', borderBottom: '1px solid var(--border-subtle)' }}>
+            <tr style={{ background: 'rgba(0, 0, 0, 0.02)', borderBottom: '1px solid var(--border-subtle)' }}>
               {columns.map((col) => {
                 const isSorted = sortBy === col.key;
                 const canSort = col.sortable !== false;
@@ -125,7 +125,7 @@ const Table = ({
                     borderBottom: '1px solid var(--border-subtle)',
                     transition: 'background var(--transition-fast)',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(99, 102, 241, 0.04)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
                   {columns.map((col) => (
@@ -156,7 +156,7 @@ const Table = ({
               alignItems: 'center',
               justifyContent: 'space-between',
               borderTop: '1px solid var(--border-subtle)',
-              background: 'rgba(0, 0, 0, 0.15)',
+              background: 'rgba(255, 255, 255, 0.4)',
               fontSize: '13px',
               color: 'var(--text-secondary)',
             }}

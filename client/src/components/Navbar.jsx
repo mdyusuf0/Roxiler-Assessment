@@ -73,7 +73,7 @@ const Navbar = () => {
             <span style={{ fontSize: '18px' }}>⭐</span>
           </div>
           <div>
-            <span style={{ fontSize: '17px', fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff' }}>
+            <span style={{ fontSize: '17px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
               Store<span style={{ color: 'var(--primary)' }}>Rate</span>
             </span>
           </div>
