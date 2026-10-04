@@ -491,3 +491,20 @@ feat(client): add react frontend with glassmorphism, animated mascots, role dash
 - **Framer Motion Variants & Spring Physics**: how spring damping, stiffness, and keyframes coordinate natural micro-interactions
 - **HTML5 Canvas requestAnimationFrame Loop**: creating high-performance particle systems without DOM thrashing
 - **Axios Interceptors**: handling global bearer authorization headers and centralized 401 unauthenticated token expiry
+
+---
+
+### Step 20 — Automated Testing, Code Quality & Final Polish
+
+**What we built:**
+- **Automated Test Suite**: Supertest and Jest integration tests (`server/tests/api.test.js`) verifying `/api/health`, field validations (Name length, password complexity, address limits), and JWT role protections.
+- **Final Documentation**: Comprehensive `README.md` containing full architecture breakdown, pre-seeded test accounts, API endpoint table, form validation rules, and quick-start instructions.
+
+**Commit message:**
+```
+chore: add automated tests and final documentation
+```
+
+**Concepts to revise:**
+- **Automated Testing**: difference between unit tests, integration tests with Supertest, and end-to-end tests
+- **Living Documentation**: keeping architecture and build journals synchronized with production code

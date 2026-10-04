@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "test": "jest --detectOpenHandles --forceExit",
     "migrate": "node config/migrate.js",
     "seed": "node config/seed.js",
     "setup-db": "node config/migrate.js && node config/seed.js"
@@ -28,6 +29,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "jest": "^30.5.2",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.3.1"
   }
 }
