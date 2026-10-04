@@ -85,6 +85,20 @@ _Will be populated as endpoints are built._
 | Method | Endpoint | Description | Auth | Role |
 | ------ | -------- | ----------- | ---- | ---- |
 | GET | `/api/health` | Server health check | No | Any |
+| POST | `/api/auth/signup` | Register new normal user | No | — |
+| POST | `/api/auth/login` | Log in (all roles) | No | — |
+| PUT | `/api/auth/change-password` | Change own password | Yes | Any |
+| POST | `/api/auth/logout` | Log out (clear cookie) | Yes | Any |
+| GET | `/api/admin/dashboard` | Dashboard counts | Yes | Admin |
+| POST | `/api/admin/users` | Create user (any role) | Yes | Admin |
+| POST | `/api/admin/stores` | Create store | Yes | Admin |
+| GET | `/api/admin/users` | List users (filter/sort) | Yes | Admin |
+| GET | `/api/admin/stores` | List stores (filter/sort) | Yes | Admin |
+| GET | `/api/admin/users/:id` | User details | Yes | Admin |
+| GET | `/api/user/stores` | List stores + own rating | Yes | User |
+| PUT | `/api/user/stores/:storeId/rating` | Submit/modify rating | Yes | User |
+| GET | `/api/store-owner/dashboard` | Store avg rating + info | Yes | Owner |
+| GET | `/api/store-owner/ratings` | List raters | Yes | Owner |
 
 ## How to Run
 
@@ -289,3 +303,109 @@ feat(db): add postgresql schema, migration, and seed scripts
 - **Database indexes**: how B-tree indexes speed up WHERE, ORDER BY, and JOIN queries
 - **SQL injection**: why parameterized queries are non-negotiable
 
+
+---
+
+### Steps 4–6 — Validators, Auth (signup/login/JWT), Change Password
+
+**What we built:**
+- **Zod validation schemas** matching the exact PDF requirements (name 20–60 chars, address max 400, password 8–16 with uppercase + special char, email format, rating 1–5)
+- **Validation middleware factory** that takes a Zod schema and returns Express middleware
+- **JWT utility** for generating/verifying access and refresh tokens
+- **Auth middleware**: `authenticate` (verify JWT from Bearer header) and `authorize` (role-based access control factory)
+- **Auth service**: signup (normal user only), login (all roles), change password
+- **Auth controller and routes**: POST `/api/auth/signup`, POST `/api/auth/login`, PUT `/api/auth/change-password`, POST `/api/auth/logout`
+
+**Why we built it this way:**
+- **Zod over manual validation**: declarative, composable schemas with excellent error messages. The same schema objects can be exported and reused on the frontend (via shared types).
+- **Validation middleware factory**: `validate(schema)` returns middleware — keeps routes clean. Request body is replaced with parsed data (Zod strips unknown fields = safe).
+- **Service layer separates business logic from HTTP**: the controller never touches bcrypt or the database directly. Makes unit testing straightforward.
+- **Refresh token in httpOnly cookie**: the frontend JavaScript can't read it, protecting against XSS token theft. The access token is in the response body for the frontend to store in memory/Redux.
+- **Generic error messages on login** ("Invalid email or password"): doesn't reveal whether the email exists or the password is wrong.
+
+**Files created:**
+- `server/validators/schemas.js` — all Zod schemas
+- `server/middleware/validate.js` — validation middleware factory
+- `server/utils/token.js` — JWT generate/verify helpers
+- `server/middleware/auth.js` — authenticate + authorize middleware
+- `server/queries/userQueries.js` — user database queries
+- `server/services/authService.js` — signup, login, changePassword logic
+- `server/controllers/authController.js` — HTTP handlers for auth
+- `server/routes/auth.js` — route definitions
+
+**Commit message:**
+```
+feat(auth): add validators, jwt auth, signup, login, and change password
+```
+
+**Concepts to revise:**
+- **Zod**: schema-first validation, `safeParse`, error formatting
+- **JWT access + refresh token pattern**: why two tokens, what goes in each
+- **httpOnly cookies**: how they protect against XSS
+- **bcrypt salt rounds**: what they do and why 10 is reasonable
+- **Middleware factories**: functions that return middleware functions (closures)
+
+---
+
+### Steps 7–10 — Admin, Normal User, Ratings, and Store Owner APIs
+
+**What we built:**
+- **Admin APIs**: dashboard counts (total users, stores, ratings), create user (any role), create store, list users with search/role filter/sort/pagination, list stores with search/sort/pagination, user details (with store rating if store owner)
+- **Normal User APIs**: list stores with search/sort/pagination + the user's own rating per store, submit or modify a rating (upsert)
+- **Store Owner APIs**: dashboard (store name, average rating, total ratings), list of users who rated their store
+
+**Why we built it this way:**
+- **Layered architecture**: Route → Controller → Service → Queries. Each layer has one job. Routes define URLs and middleware. Controllers handle HTTP (parse params, send response). Services hold business rules. Queries touch the database. This makes each layer independently testable.
+- **Upsert for ratings** (`INSERT ... ON CONFLICT DO UPDATE`): elegant PostgreSQL feature that handles both "submit new" and "modify existing" in one query — no need for separate create/update endpoints.
+- **Whitelisted sort columns**: prevents SQL injection via ORDER BY. User can only sort by columns we explicitly allow.
+- **ILIKE for search**: case-insensitive PostgreSQL search across name and address.
+- **Pagination**: offset-based with total count for frontend to build page controls.
+- **LEFT JOIN for average ratings**: stores without ratings still appear (with 0 average).
+
+**Files created:**
+- `server/queries/storeQueries.js` — store listing with search, sort, pagination, user rating
+- `server/queries/ratingQueries.js` — upsert, get user rating, get raters, average
+- `server/queries/adminQueries.js` — dashboard counts, user/store lists, user details
+- `server/services/adminService.js` — admin business logic
+- `server/services/userService.js` — normal user business logic
+- `server/services/storeOwnerService.js` — store owner business logic
+- `server/controllers/adminController.js`, `userController.js`, `storeOwnerController.js`
+- `server/routes/admin.js`, `user.js`, `storeOwner.js`
+
+**How to test:**
+```bash
+# After DB is set up:
+cd server && npm run dev
+
+# Signup
+curl -X POST http://localhost:5000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User Account Name","email":"test@test.com","address":"123 Test St","password":"Test@1234"}'
+
+# Login
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@storerating.com","password":"Admin@123"}'
+# → Copy the accessToken
+
+# Admin dashboard
+curl http://localhost:5000/api/admin/dashboard \
+  -H "Authorization: Bearer <token>"
+
+# List stores with search
+curl "http://localhost:5000/api/admin/stores?search=tech&sortBy=name&sortOrder=asc" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Commit message:**
+```
+feat(api): add admin, user, rating, and store owner endpoints
+```
+
+**Concepts to revise:**
+- **PostgreSQL UPSERT** (`ON CONFLICT DO UPDATE`): how it works and when to use it
+- **ILIKE vs LIKE**: case-insensitive pattern matching in PostgreSQL
+- **Offset-based pagination**: trade-offs vs cursor-based pagination
+- **SQL injection via ORDER BY**: why you must whitelist sort columns
+- **LEFT JOIN vs INNER JOIN**: when you need to keep rows without matches
+- **Aggregate functions** (AVG, COUNT): how GROUP BY works with JOINs
