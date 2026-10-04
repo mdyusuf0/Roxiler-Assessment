@@ -228,3 +228,64 @@ feat(server): add express server with config, error handling, and health route
 - **dotenv**: how `.env` files are loaded into `process.env`
 - **Operational vs programmer errors**: why you should distinguish between expected and unexpected failures
 
+---
+
+### Step 3 — PostgreSQL connection, schema, migrations, seed
+
+**What we built:**
+A PostgreSQL connection pool, a full SQL schema with three tables (`users`, `stores`, `ratings`), a migration script that auto-creates the database and runs the schema, and a seed script with realistic test data (hashed passwords, proper FKs).
+
+**Why we built it this way:**
+- **Connection pool (`pg.Pool`)**: reuses connections instead of opening/closing one per query. Essential for performance under load. The pool auto-manages connection lifecycle.
+- **Enum type `user_role`**: PostgreSQL enforces valid values at the DB level — even if app code has a bug, the database won't allow an invalid role. Better than a plain VARCHAR.
+- **`UNIQUE(user_id, store_id)` on ratings**: one rating per user per store, enforced by the database. The app layer checks this too, but the constraint is the safety net.
+- **`CHECK (rating >= 1 AND rating <= 5)`**: database-level validation for rating range.
+- **`ON DELETE CASCADE` on ratings**: if a user or store is deleted, their ratings are auto-removed. No orphan rows.
+- **`ON DELETE SET NULL` on stores.owner_id**: if a store owner is deleted, the store remains but becomes unowned.
+- **Indexes on search/filter/sort columns**: `name`, `email`, `role` on users; `name`, `email` on stores; `user_id`, `store_id` on ratings. These speed up the filtered list queries we'll build.
+- **Separate migrate and seed scripts**: migration is idempotent (drops and recreates). Seed clears data first, so it's safe to re-run.
+
+**Files created or changed:**
+- `server/config/db.js` — PostgreSQL connection pool + query helper
+- `server/config/schema.sql` — full DDL with tables, enum, constraints, indexes
+- `server/config/migrate.js` — creates DB if missing, runs schema.sql
+- `server/config/seed.js` — inserts test users, stores, ratings with bcrypt passwords
+- `server/package.json` — added `migrate`, `seed`, `setup-db` scripts
+
+**Key code explained:**
+
+`schema.sql` — the ratings unique constraint:
+```sql
+UNIQUE (user_id, store_id)
+```
+This creates a composite unique index. A user can rate many stores, a store can have many ratings, but the same user can only rate the same store once. To change a rating, we UPDATE rather than INSERT.
+
+`seed.js` — parameterized queries to prevent SQL injection:
+```js
+await pool.query(
+  `INSERT INTO users (name, email, password, ...) VALUES ($1, $2, ...)`,
+  [adminPw, owner1Pw, ...]
+);
+```
+Never interpolate values into SQL strings. Always use `$1, $2` placeholders.
+
+**How to test:**
+```bash
+cd server
+npm run migrate   # Creates DB + tables
+npm run seed      # Populates test data
+```
+
+**Commit message:**
+```
+feat(db): add postgresql schema, migration, and seed scripts
+```
+
+**Concepts to revise:**
+- **Connection pooling**: why reusing connections is critical for performance
+- **PostgreSQL ENUM types**: how they differ from CHECK constraints on VARCHAR
+- **Database normalization**: why ratings are a separate table (not an array on stores)
+- **Foreign keys and cascading deletes**: how ON DELETE CASCADE/SET NULL work
+- **Database indexes**: how B-tree indexes speed up WHERE, ORDER BY, and JOIN queries
+- **SQL injection**: why parameterized queries are non-negotiable
+
