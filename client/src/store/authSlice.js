@@ -1,13 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Try to restore auth state from localStorage
-const savedUser = localStorage.getItem('user');
+// Safely restore auth state from localStorage
+let parsedUser = null;
+try {
+  const savedUser = localStorage.getItem('user');
+  if (savedUser && savedUser !== 'undefined') {
+    parsedUser = JSON.parse(savedUser);
+  }
+} catch (e) {
+  localStorage.removeItem('user');
+}
+
 const savedToken = localStorage.getItem('accessToken');
 
 const initialState = {
-  user: savedUser ? JSON.parse(savedUser) : null,
+  user: parsedUser,
   accessToken: savedToken || null,
-  isAuthenticated: !!savedToken,
+  isAuthenticated: !!(savedToken && parsedUser && parsedUser.role),
 };
 
 const authSlice = createSlice({
