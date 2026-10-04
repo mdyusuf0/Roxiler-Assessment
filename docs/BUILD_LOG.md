@@ -508,3 +508,53 @@ chore: add automated tests and final documentation
 **Concepts to revise:**
 - **Automated Testing**: difference between unit tests, integration tests with Supertest, and end-to-end tests
 - **Living Documentation**: keeping architecture and build journals synchronized with production code
+
+---
+
+### Login Page Fix & Video Reference Alignment
+
+**What we built:**
+- **Full Viewport 50/50 Split Layout**:
+  - Removed all outer margins and dark card wrapping; page now occupies `100vw` by `100dvh`.
+  - Left panel (50%): light grey background (`#eceff3`) displaying the character mascots anchored at the bottom-center.
+  - Right panel (50%): white form panel (`#ffffff`) vertically centered with geometric logo mark, title, underline inputs, checkbox, buttons, and demo account chips.
+- **Intro Splash Animation**:
+  - Starts with a solid purple screen (`#6726fe`).
+  - Two white eye circles expand and blink.
+  - The curtain dissolves away to reveal the mascots springing into place (black character dropping tilted from the top right and springing upright, purple dropping down, and orange/yellow popping up from below).
+- **Layered SVG Characters (`LoginCharacters.jsx`)**:
+  - Four distinct characters: tall purple rectangle, black rectangle, orange dome, and yellow pill arch.
+  - Split into anatomical SVG groups (`body`, `face`, `eyes`, `pupils`, `mouth`).
+- **Interactive Mood State Machine (`useCharacterMood.js`)**:
+  - `idle`: Pupils track the mouse cursor across the page via lerped vector coordinates (`requestAnimationFrame`), faces shift with parallax, bodies subtly oscillate with breathing, and eyes blink naturally every 2.5–5 seconds.
+  - `email`: Mascots lean forward and stretch towards the form (`rotate: 6deg, skewX: -5deg`), tracking the text caret as the user types.
+  - `password`: Mascots politely look away from the form (eyes up and away to the left).
+  - `passwordVisible`: When the eye icon is clicked, mascots look upward with awkward surprise.
+  - `error`: Entire group shakes horizontally (`x: [-12, 12, ... 0]`), mouths invert to frowning arcs, and purple slumps.
+  - `success`: Joyous celebration bounce (`y: [0, -28, 0, -14, 0]`), smiling mouth shapes, followed by a smooth purple curtain transition before navigation.
+- **Form Controls & Details**:
+  - `UnderlineInput`: Label above, flat borderless design with an animated bottom border line that expands on focus.
+  - "Remember for 30 days" checkbox on the left, "Forgot password?" link on the right.
+  - Primary solid black pill button ("Log In") with loading spinner.
+  - Secondary "Log in with Google" pill button with multi-colored SVG Google icon.
+  - Subtle reviewer demo account chips at the bottom.
+- **Theme Overhaul (`media_1791134755063.png`)**:
+  - Updated application theme to **Light Frosted Glassmorphism & Neumorphism** with ambient background gradient bubbles, frosted glass cards (`backdrop-filter: blur(24px)`), and dual neumorphic drop shadows.
+
+**Key Code Explained — The Character Mood State Machine:**
+```js
+// In useCharacterMood.js:
+// Smooth lerp interpolation updates pupil positions 60 times a second without React re-render lag
+const updatePhysics = () => {
+  currentEye.current.x += (targetEye.current.x - currentEye.current.x) * 0.12;
+  currentEye.current.y += (targetEye.current.y - currentEye.current.y) * 0.12;
+  setEyePos({ x: currentEye.current.x, y: currentEye.current.y });
+  animId = requestAnimationFrame(updatePhysics);
+};
+```
+
+**Commits:**
+- `fix(auth): resolve login error handling and verify seeded accounts`
+- `feat(login): rebuild characters as layered interactive svg with mood engine`
+- `refactor(login): implement full-screen split layout with underline inputs and intro animation`
+- `style(theme): update application theme to light frosted glassmorphism and neumorphism`
