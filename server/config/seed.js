@@ -13,7 +13,7 @@ const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const env = require('./env');
 
-async function seed() {
+async function seed(existingPool) {
   const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
@@ -29,7 +29,7 @@ async function seed() {
         password: env.db.password,
       };
 
-  const pool = new Pool(poolConfig);
+  const pool = existingPool || new Pool(poolConfig);
 
   try {
     // Clear existing data (respects FK order)
@@ -100,10 +100,17 @@ async function seed() {
     console.log('   Normal User: user2@example.com     / User@1234\n');
   } catch (err) {
     console.error('❌ Seeding failed:', err.message);
-    process.exit(1);
+    if (!existingPool) process.exit(1);
+    throw err;
   } finally {
-    await pool.end();
+    if (!existingPool) {
+      await pool.end();
+    }
   }
 }
 
-seed();
+if (require.main === module) {
+  seed();
+}
+
+module.exports = { seed };

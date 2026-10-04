@@ -632,3 +632,26 @@ feat: add rich landing page, storerate logo, footer, and vercel/render deploymen
 ```
 fix(deploy): allow DATABASE_URL in production env validation and add cloud SSL to migration/seed
 ```
+
+---
+
+### Step 23 — Automatic Cloud Database Initialization (No Shell Access Required)
+
+**What we built:**
+- **Zero-Manual-Action Cloud Initialization (`server/config/initDb.js`)**:
+  - Render's free tier restricts interactive Shell access (`upgrade required`). To completely eliminate the need for SSH/shell commands, the server now checks on boot whether the `users` table exists.
+  - If the database is empty (first deployment): it automatically executes the full schema migration (`schema.sql`) and seeds the database with the pre-configured accounts (System Admin, 2 Store Owners, 2 Normal Users, 3 Stores, and 5 Ratings).
+  - If the database is already populated: it skips initialization, guaranteeing no data loss upon server restart or wake-up.
+- **Direct HTTP Trigger Endpoint (`GET /api/health/init-db`)**:
+  - Added an endpoint to verify database status or re-seed directly via browser or curl request without needing any Render dashboard terminal.
+
+**Files created or changed:**
+- `server/config/initDb.js`
+- `server/config/seed.js`
+- `server/index.js`
+- `server/routes/health.js`
+
+**Commit message:**
+```
+feat(deploy): add automatic database initialization on server boot and /api/health/init-db endpoint
+```

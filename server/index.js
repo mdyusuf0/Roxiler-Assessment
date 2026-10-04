@@ -66,11 +66,19 @@ app.use(errorHandler);
 
 // ── Start server (only when executed directly) ──
 if (require.main === module) {
-  app.listen(env.port, () => {
-    console.log(`\n🚀 Server running on http://localhost:${env.port}`);
-    console.log(`   Environment: ${env.nodeEnv}`);
-    console.log(`   Health check: http://localhost:${env.port}/api/health\n`);
-  });
+  const autoInitDb = require('./config/initDb');
+
+  autoInitDb()
+    .catch((err) => {
+      console.warn('⚠️ Non-fatal autoInitDb notice:', err.message);
+    })
+    .finally(() => {
+      app.listen(env.port, () => {
+        console.log(`\n🚀 Server running on http://localhost:${env.port}`);
+        console.log(`   Environment: ${env.nodeEnv}`);
+        console.log(`   Health check: http://localhost:${env.port}/api/health\n`);
+      });
+    });
 }
 
 module.exports = app;

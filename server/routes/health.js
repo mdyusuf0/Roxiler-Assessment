@@ -11,4 +11,15 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/init-db', async (req, res, next) => {
+  try {
+    const autoInitDb = require('../config/initDb');
+    const force = req.query.force === 'true';
+    const result = await autoInitDb(force);
+    return sendResponse(res, 200, result, 'Database initialized successfully');
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
