@@ -3,12 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { signupUser } from '../services/authService';
-import Input from '../components/Input';
-import Button from '../components/Button';
-import DoodleCharacters from '../components/DoodleCharacters';
-import { FiUser, FiMail, FiMapPin, FiLock } from 'react-icons/fi';
+import UnderlineInput from '../components/UnderlineInput';
+import LoginCharacters from '../components/LoginCharacters';
+import useCharacterMood from '../hooks/useCharacterMood';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -20,86 +19,106 @@ const Signup = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [charState, setCharState] = useState('idle');
-  const [errors, setErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isSuccessTransition, setIsSuccessTransition] = useState(false);
+
+  const { mood, setMood, isBlinking, eyePos, setCaretOffset } = useCharacterMood();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setCaretOffset(Math.min(value.length / 35, 1));
+    if (fieldErrors[field] || errorMessage) {
+      setFieldErrors((prev) => ({ ...prev, [field]: null }));
+      setErrorMessage('');
+    }
+  };
+
+  const handleFocusField = (field) => {
+    if (field === 'password') {
+      setMood(showPassword ? 'passwordVisible' : 'password');
+    } else {
+      setMood('email');
+    }
+  };
+
+  const handleTogglePassword = () => {
+    const nextState = !showPassword;
+    setShowPassword(nextState);
+    if (document.activeElement?.getAttribute('name') === 'password') {
+      setMood(nextState ? 'passwordVisible' : 'password');
+    }
+  };
+
   const validate = () => {
-    const newErrors = {};
+    const errors = {};
 
-    // Name: 20 to 60 characters
     if (!formData.name) {
-      newErrors.name = 'Full Name is required';
+      errors.name = 'Full Name is required';
     } else if (formData.name.trim().length < 20 || formData.name.trim().length > 60) {
-      newErrors.name = `Name must be 20 to 60 characters (currently ${formData.name.trim().length})`;
+      errors.name = `Name must be 20 to 60 characters (currently ${formData.name.trim().length})`;
     }
 
-    // Email
     if (!formData.email) {
-      newErrors.email = 'Email address is required';
+      errors.email = 'Email address is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      errors.email = 'Please enter a valid email address';
     }
 
-    // Address: max 400 characters
     if (!formData.address) {
-      newErrors.address = 'Address is required';
+      errors.address = 'Address is required';
     } else if (formData.address.length > 400) {
-      newErrors.address = `Address must be at most 400 characters (currently ${formData.address.length})`;
+      errors.address = `Address must be at most 400 characters (currently ${formData.address.length})`;
     }
 
-    // Password: 8-16 characters, uppercase + special character
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      errors.password = 'Password is required';
     } else {
       if (formData.password.length < 8 || formData.password.length > 16) {
-        newErrors.password = 'Password must be 8 to 16 characters';
+        errors.password = 'Password must be 8 to 16 characters';
       } else if (!/[A-Z]/.test(formData.password)) {
-        newErrors.password = 'Must contain at least one uppercase letter';
+        errors.password = 'Must contain at least one uppercase letter';
       } else if (!/[^A-Za-z0-9]/.test(formData.password)) {
-        newErrors.password = 'Must contain at least one special character';
+        errors.password = 'Must contain at least one special character';
       }
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
-    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) {
-      setCharState('error');
-      setTimeout(() => setCharState('idle'), 1500);
+      setMood('error');
+      setTimeout(() => setMood('idle'), 2200);
       return;
     }
 
     setIsLoading(true);
+    setErrorMessage('');
+
     try {
       const response = await signupUser(formData);
       const { user, accessToken } = response.data.data;
 
-      setCharState('success');
+      setMood('success');
+      setIsSuccessTransition(true);
       dispatch(setCredentials({ user, accessToken }));
       toast.success('Account created! Welcome to StoreRate 🎉');
 
       setTimeout(() => {
         navigate('/user', { replace: true });
-      }, 700);
+      }, 900);
     } catch (err) {
-      setCharState('error');
-      const msg = err.response?.data?.message || 'Failed to create account';
+      setMood('error');
+      const msg = err.response?.data?.message || 'Failed to create account. Please check your details.';
+      setErrorMessage(msg);
       toast.error(msg);
-      setErrors({ form: msg });
-      setTimeout(() => setCharState('idle'), 2000);
+      setTimeout(() => setMood('idle'), 2200);
     } finally {
       setIsLoading(false);
     }
@@ -108,170 +127,215 @@ const Signup = () => {
   return (
     <div
       style={{
+        width: '100vw',
+        height: '100dvh',
         minHeight: '100vh',
+        overflow: 'hidden',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
         position: 'relative',
-        zIndex: 2,
+        background: '#ffffff',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
+      {/* Success Curtain Transition */}
+      <AnimatePresence>
+        {isSuccessTransition && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: '0%' }}
+            transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9998,
+              background: '#6726fe',
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Left Panel: Character Stage */}
+      <div
         style={{
-          width: '100%',
-          maxWidth: '980px',
-          minHeight: '620px',
-          background: 'rgba(235, 238, 242, 0.97)',
-          borderRadius: '32px',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          flex: '1 1 50%',
+          width: '50%',
+          height: '100%',
+          background: '#eceff3',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          position: 'relative',
+          paddingBottom: '0px',
+          boxSizing: 'border-box',
           overflow: 'hidden',
         }}
       >
-        {/* Left Side: Mascot Stage */}
-        <div
-          style={{
-            background: '#e3e7ed',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            padding: '40px 24px 20px',
-            position: 'relative',
-            minHeight: '380px',
-          }}
-        >
-          <div style={{ position: 'absolute', top: '32px', left: '36px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#4b5563', letterSpacing: '0.05em' }}>
-              JOIN THE COMMUNITY
-            </span>
-          </div>
+        <LoginCharacters
+          mood={mood}
+          isBlinking={isBlinking}
+          eyePos={eyePos}
+        />
+      </div>
 
-          <DoodleCharacters
-            state={charState}
-            inputLength={formData.name.length || formData.email.length}
-            isPeeking={showPassword}
-          />
-        </div>
-
-        {/* Right Side: Registration Form */}
-        <div
-          style={{
-            background: '#ffffff',
-            padding: '40px 44px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            color: '#111827',
-          }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>
-              Create an Account
+      {/* Right Panel: Registration Form */}
+      <div
+        style={{
+          flex: '1 1 50%',
+          width: '50%',
+          height: '100%',
+          background: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '30px 60px',
+          boxSizing: 'border-box',
+          overflowY: 'auto',
+          position: 'relative',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          {/* Logo Mark */}
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <h1
+              style={{
+                fontSize: '26px',
+                fontWeight: 800,
+                color: '#111827',
+                letterSpacing: '-0.025em',
+                lineHeight: 1.2,
+              }}
+            >
+              Create Account
             </h1>
             <p style={{ color: '#6b7280', fontSize: '13px', marginTop: '4px' }}>
-              Rate and discover the best registered stores
+              Join the community to discover and rate registered stores
             </p>
           </div>
 
-          {errors.form && (
-            <div
+          {/* Inline Error Message */}
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
               style={{
                 padding: '10px 14px',
                 borderRadius: '8px',
-                background: '#fee2e2',
-                color: '#dc2626',
+                background: '#fef2f2',
+                border: '1px solid #fee2e2',
+                color: '#ef4444',
                 fontSize: '13px',
                 marginBottom: '16px',
-                border: '1px solid #fecaca',
+                textAlign: 'center',
+                fontWeight: 500,
               }}
             >
-              {errors.form}
-            </div>
+              {errorMessage}
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <Input
-              label="Full Name"
-              icon={FiUser}
-              placeholder="e.g. Christopher Alexander Nolan (20-60 chars)"
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <UnderlineInput
+              id="signup-name"
+              name="name"
+              label="Full Name (20–60 characters)"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              onFocus={() => setCharState('typing')}
-              onBlur={() => setCharState('idle')}
-              error={errors.name}
-              helperText={`${formData.name.length}/60`}
+              onFocus={() => handleFocusField('name')}
+              onBlur={() => setMood('idle')}
+              error={fieldErrors.name}
+              placeholder="e.g. Christopher Alexander Nolan"
               required
-              style={{ background: '#f9fafb', color: '#111827', border: '1px solid #e5e7eb' }}
             />
 
-            <Input
+            <UnderlineInput
+              id="signup-email"
+              name="email"
               label="Email Address"
               type="email"
-              icon={FiMail}
-              placeholder="name@example.com"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              onFocus={() => setCharState('typing')}
-              onBlur={() => setCharState('idle')}
-              error={errors.email}
+              onFocus={() => handleFocusField('email')}
+              onBlur={() => setMood('idle')}
+              error={fieldErrors.email}
+              placeholder="name@example.com"
               required
-              style={{ background: '#f9fafb', color: '#111827', border: '1px solid #e5e7eb' }}
             />
 
-            <Input
-              label="Address"
-              as="textarea"
-              rows={2}
-              icon={FiMapPin}
-              placeholder="Street, City, Country (max 400 chars)"
+            <UnderlineInput
+              id="signup-address"
+              name="address"
+              label="Address (max 400 characters)"
               value={formData.address}
               onChange={(e) => handleInputChange('address', e.target.value)}
-              onFocus={() => setCharState('typing')}
-              onBlur={() => setCharState('idle')}
-              error={errors.address}
-              helperText={`${formData.address.length}/400`}
+              onFocus={() => handleFocusField('address')}
+              onBlur={() => setMood('idle')}
+              error={fieldErrors.address}
+              placeholder="Street, City, Country"
               required
-              style={{ background: '#f9fafb', color: '#111827', border: '1px solid #e5e7eb' }}
             />
 
-            <Input
-              label="Password"
+            <UnderlineInput
+              id="signup-password"
+              name="password"
+              label="Password (8–16 chars, 1 uppercase, 1 special char)"
               type={showPassword ? 'text' : 'password'}
-              icon={FiLock}
-              placeholder="8-16 chars, 1 uppercase, 1 special char"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
-              onFocus={() => setCharState('password')}
-              onBlur={() => setCharState('idle')}
-              error={errors.password}
+              onFocus={() => handleFocusField('password')}
+              onBlur={() => setMood('idle')}
+              error={fieldErrors.password}
               showPasswordToggle
               isPasswordVisible={showPassword}
-              onPasswordToggle={() => setShowPassword(!showPassword)}
+              onPasswordToggle={handleTogglePassword}
+              placeholder="••••••••"
               required
-              style={{ background: '#f9fafb', color: '#111827', border: '1px solid #e5e7eb' }}
             />
 
-            <Button
+            <motion.button
               type="submit"
-              variant="dark"
-              size="lg"
-              isLoading={isLoading}
+              disabled={isLoading}
+              whileHover={{ scale: 1.01, filter: 'brightness(1.15)' }}
+              whileTap={{ scale: 0.99 }}
               style={{
-                borderRadius: '12px',
-                marginTop: '12px',
+                width: '100%',
+                padding: '13px 20px',
                 background: '#111827',
                 color: '#ffffff',
+                border: 'none',
+                borderRadius: '9999px',
+                fontSize: '15px',
                 fontWeight: 600,
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginTop: '10px',
+                boxShadow: '0 4px 12px rgba(17, 24, 39, 0.2)',
+                transition: 'all 0.15s ease',
               }}
             >
-              Sign Up
-            </Button>
+              {isLoading ? (
+                <>
+                  <span
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTopColor: '#ffffff',
+                      borderRadius: '50%',
+                      display: 'inline-block',
+                      animation: 'spin 0.6s linear infinite',
+                    }}
+                  />
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                <span>Create Account</span>
+              )}
+            </motion.button>
           </form>
 
           <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px', color: '#6b7280' }}>
@@ -281,7 +345,25 @@ const Signup = () => {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @media (max-width: 820px) {
+          body { overflow-y: auto !important; }
+          div[style*="width: 100vw"] {
+            flex-direction: column !important;
+            height: auto !important;
+            min-height: 100vh !important;
+          }
+          div[style*="width: 50%"] {
+            width: 100% !important;
+            flex: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
