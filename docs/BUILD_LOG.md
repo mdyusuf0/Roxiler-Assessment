@@ -409,3 +409,85 @@ feat(api): add admin, user, rating, and store owner endpoints
 - **SQL injection via ORDER BY**: why you must whitelist sort columns
 - **LEFT JOIN vs INNER JOIN**: when you need to keep rows without matches
 - **Aggregate functions** (AVG, COUNT): how GROUP BY works with JOINs
+
+---
+
+### Steps 11–17 — Frontend Client Architecture & Role Portals
+
+**What we built:**
+- **React (Vite) + React Router + Redux Toolkit**:
+  - Global auth slice hydrating tokens and user session from `localStorage`.
+  - Axios client (`api.js`) with request interceptor automatically attaching the Bearer JWT and response interceptor redirecting on 401.
+  - Role-based `ProtectedRoute` enforcing role boundaries (`admin`, `user`, `store_owner`).
+- **Design System & Glassmorphic UI**:
+  - `variables.css` design tokens (colors, glass blur, radii, shadows, brand mascot colors).
+  - Ambient radial glow blobs in `index.css`.
+  - Global `CursorParticles` 60fps canvas effect with soft glowing brand trails and click bursts (respecting `prefers-reduced-motion` and touch devices).
+  - Reusable components: `Button` (with variants, loading spinners, and hover lifts), `Input` (floating labels, password reveal eyes, error helper text), `GlassCard`, `Modal` (with AnimatePresence and Escape dismiss), `Navbar` (with role pill badges, logout, and change password modal), and `RatingStars` (interactive 1–5 stars with hover preview and gold glow).
+  - Reusable `Table` component with column sorting (asc/desc), skeleton loading states, empty message illustration, and pagination controls.
+- **Login & Signup with Doodle Mascots**:
+  - Authentic implementation matching reference screenshot layout: mascot stage on left, clean white glass panel on right.
+  - Interactive SVG mascots (`DoodleCharacters`):
+    - *Typing*: pupils track text length and caret position.
+    - *Password*: mascots cover their eyes with paws/wings/blinds so they don't peek.
+    - *Show password toggle*: mascots peek!
+    - *Success*: joy celebration jump and bounce.
+    - *Error*: horizontal shake with concerned expressions.
+  - Quick demo accounts shortcuts for immediate evaluator testing.
+- **System Administrator Portal**:
+  - Dashboard with animated metric cards for Total Users, Total Stores, and Submitted Ratings.
+  - Users Management table: search by name/email/address, filter by role, sortable headers, "Add New User" modal (validating 20–60 chars name, email, 400 chars address, 8–16 password), and "User Details" modal that reveals store rating if the user is a Store Owner.
+  - Stores Directory table: search, sort on name/email/address/rating, and "Add New Store" modal with owner assignment.
+- **Normal User Portal**:
+  - Store browse cards displaying store name, address, overall average rating, user's own submitted rating, and "Rate Store / Modify Rating" CTA.
+  - Search by name and address with sorting (name asc/desc, highest/lowest rating).
+  - Interactive rating modal with 1 to 5 star rating selection.
+- **Store Owner Portal**:
+  - Store overview banner displaying store name, average star rating badge, and total customer count.
+  - Table of raters showing customer name, email, rating stars, and date submitted with ascending/descending sorting.
+- **Cross-Role Features**:
+  - Change Password modal accessible from Navbar across all roles with password complexity enforcement.
+  - Dedicated 404 (Not Found) and 403 (Unauthorized) fallback pages.
+  - Toast notifications via `react-hot-toast`.
+
+**Why we built it this way:**
+- **Modular SVG Mascots vs static images**: programmatic SVG nodes allow individual eye and eyelid transformations driven by the input state machine (`idle | typing | password | success | error`) without raster scaling artifacts.
+- **Redux Toolkit + LocalStorage**: keeps user and token state synchronized across reloads while providing instant reactive UI state for navigation and role guards.
+- **Reusable Sortable Table**: centralizes table headers, sort toggles, pagination, and skeleton loading patterns rather than duplicating table boilerplate across 3 different role views.
+- **Upsert Rating Interaction**: normal users can freely submit a new rating or click "Modify Rating" on existing stores without cumbersome separate workflows.
+
+**Files created or changed:**
+- `client/src/styles/variables.css`
+- `client/src/index.css`
+- `client/src/components/Button.jsx`
+- `client/src/components/Input.jsx`
+- `client/src/components/GlassCard.jsx`
+- `client/src/components/Modal.jsx`
+- `client/src/components/Navbar.jsx`
+- `client/src/components/ChangePasswordForm.jsx`
+- `client/src/components/RatingStars.jsx`
+- `client/src/components/Table.jsx`
+- `client/src/components/CursorParticles.jsx`
+- `client/src/components/DoodleCharacters.jsx`
+- `client/src/pages/Login.jsx`
+- `client/src/pages/Signup.jsx`
+- `client/src/pages/admin/AdminDashboard.jsx`
+- `client/src/pages/admin/AdminUsers.jsx`
+- `client/src/pages/admin/AdminStores.jsx`
+- `client/src/pages/user/UserDashboard.jsx`
+- `client/src/pages/owner/OwnerDashboard.jsx`
+- `client/src/pages/NotFound.jsx`
+- `client/src/pages/Unauthorized.jsx`
+- `client/src/App.jsx`
+- `client/src/main.jsx`
+
+**Commit message:**
+```
+feat(client): add react frontend with glassmorphism, animated mascots, role dashboards, and rating widget
+```
+
+**Concepts to revise:**
+- **React Router v7 / v6 Data & Element Routes**: how `Navigate` and `useLocation` manage state and redirect history
+- **Framer Motion Variants & Spring Physics**: how spring damping, stiffness, and keyframes coordinate natural micro-interactions
+- **HTML5 Canvas requestAnimationFrame Loop**: creating high-performance particle systems without DOM thrashing
+- **Axios Interceptors**: handling global bearer authorization headers and centralized 401 unauthenticated token expiry
