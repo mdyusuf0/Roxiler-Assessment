@@ -1,7 +1,8 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load .env from project root (one level up from /server)
+// Load .env from server dir first, then fallback to project root
+dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const env = {
@@ -12,7 +13,7 @@ const env = {
     port: parseInt(process.env.DB_PORT, 10) || 5432,
     name: process.env.DB_NAME || 'store_rating',
     user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '',
+    password: String(process.env.DB_PASSWORD || 'postgres'),
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'dev-secret-change-me',

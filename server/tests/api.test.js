@@ -75,4 +75,36 @@ describe('API Health & Validation Tests', () => {
       expect(res.body.success).toBe(false);
     });
   });
+
+  describe('Seeded Accounts Authentication', () => {
+    it('should log in as System Administrator', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'admin@storerating.com',
+        password: 'Admin@123',
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.user.role).toBe('admin');
+      expect(res.body.data.accessToken).toBeDefined();
+    });
+
+    it('should log in as Store Owner', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'owner@store1.com',
+        password: 'Owner@123',
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.user.role).toBe('store_owner');
+      expect(res.body.data.accessToken).toBeDefined();
+    });
+
+    it('should log in as Normal User', async () => {
+      const res = await request(app).post('/api/auth/login').send({
+        email: 'user@example.com',
+        password: 'User@1234',
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.user.role).toBe('user');
+      expect(res.body.data.accessToken).toBeDefined();
+    });
+  });
 });

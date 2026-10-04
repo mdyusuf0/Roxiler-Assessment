@@ -6,7 +6,7 @@ const pool = new Pool({
   port: env.db.port,
   database: env.db.name,
   user: env.db.user,
-  password: env.db.password,
+  password: String(env.db.password || 'postgres'),
 });
 
 // Log connection status once on startup
