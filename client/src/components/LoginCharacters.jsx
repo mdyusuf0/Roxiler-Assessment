@@ -18,15 +18,15 @@ const LoginCharacters = ({
   isBlinking = false,
   eyePos = { x: 0, y: 0 },
 }) => {
-  // Parallax offsets based on cursor
-  const purpleFaceX = eyePos.x * 5;
-  const purpleFaceY = eyePos.y * 4;
-  const blackFaceX = eyePos.x * 4;
-  const blackFaceY = eyePos.y * 3;
-  const orangeFaceX = eyePos.x * 6;
-  const orangeFaceY = eyePos.y * 3;
-  const yellowFaceX = eyePos.x * 4;
-  const yellowFaceY = eyePos.y * 3;
+  // Parallax offsets based on cursor (amplified for high reactivity)
+  const purpleFaceX = eyePos.x * 12;
+  const purpleFaceY = eyePos.y * 9;
+  const blackFaceX = eyePos.x * 10;
+  const blackFaceY = eyePos.y * 8;
+  const orangeFaceX = eyePos.x * 15;
+  const orangeFaceY = eyePos.y * 9;
+  const yellowFaceX = eyePos.x * 12;
+  const yellowFaceY = eyePos.y * 8;
 
   // Group shake variant on error
   const containerVariants = {
@@ -49,8 +49,8 @@ const LoginCharacters = ({
       variants={containerVariants}
       animate={mood === 'error' ? 'error' : mood === 'success' ? 'success' : 'idle'}
       style={{
-        width: '100%',
-        maxWidth: '460px',
+        width: '92%',
+        maxWidth: '680px',
         margin: '0 auto',
         userSelect: 'none',
         display: 'flex',
@@ -78,11 +78,11 @@ const LoginCharacters = ({
               ? { y: 6, opacity: 1, rotate: -3 }
               : mood === 'success'
               ? { y: [0, -24, 0], opacity: 1, rotate: [0, -4, 0] }
-              : { y: [0, -3, 0], opacity: 1, rotate: eyePos.x * 1.5, x: eyePos.x * 2 }
+              : { y: [0, -4, 0], opacity: 1, rotate: eyePos.x * 4.0, x: eyePos.x * 6.5, skewX: eyePos.x * -2.5 }
           }
           transition={
             mood === 'idle'
-              ? { y: { duration: 3.6, repeat: Infinity, ease: 'easeInOut' }, duration: 0.25 }
+              ? { y: { duration: 3.6, repeat: Infinity, ease: 'easeInOut' }, duration: 0.2 }
               : { type: 'spring', stiffness: 260, damping: 20 }
           }
           style={{ transformOrigin: '200px 340px' }}
@@ -93,11 +93,11 @@ const LoginCharacters = ({
           {/* Face Group (Eyes + Nose/Mouth) */}
           <motion.g animate={{ x: purpleFaceX, y: purpleFaceY }} transition={{ duration: 0.1 }}>
             {/* Left Eye */}
-            <circle cx="176" cy="112" r="7" fill="white" />
+            <circle cx="176" cy="112" r="8.5" fill="white" />
             <motion.circle
-              cx={176 + eyePos.x * 3.6}
-              cy={112 + eyePos.y * 3.4}
-              r="3.5"
+              cx={176 + eyePos.x * 5.2}
+              cy={112 + eyePos.y * 4.8}
+              r="4"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -106,11 +106,11 @@ const LoginCharacters = ({
             />
 
             {/* Right Eye */}
-            <circle cx="218" cy="112" r="7" fill="white" />
+            <circle cx="218" cy="112" r="8.5" fill="white" />
             <motion.circle
-              cx={218 + eyePos.x * 3.6}
-              cy={112 + eyePos.y * 3.4}
-              r="3.5"
+              cx={218 + eyePos.x * 5.2}
+              cy={112 + eyePos.y * 4.8}
+              r="4"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -166,7 +166,7 @@ const LoginCharacters = ({
               ? { y: 4, rotate: 2, opacity: 1 }
               : mood === 'success'
               ? { y: [0, -30, 0], rotate: [0, 5, 0], opacity: 1 }
-              : { y: [0, -2, 0], rotate: 0, opacity: 1 }
+              : { y: [0, -3, 0], rotate: eyePos.x * 4.5, x: eyePos.x * 7.0, opacity: 1 }
           }
           transition={
             mood === 'idle'
@@ -181,11 +181,11 @@ const LoginCharacters = ({
           {/* Face Group */}
           <motion.g animate={{ x: blackFaceX, y: blackFaceY }} transition={{ duration: 0.1 }}>
             {/* Left Eye */}
-            <circle cx="264" cy="192" r="8" fill="white" />
+            <circle cx="264" cy="192" r="9" fill="white" />
             <motion.circle
-              cx={264 + eyePos.x * 3.8}
-              cy={192 + eyePos.y * 3.4}
-              r="4.2"
+              cx={264 + eyePos.x * 5.5}
+              cy={192 + eyePos.y * 5.0}
+              r="4.5"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -194,11 +194,11 @@ const LoginCharacters = ({
             />
 
             {/* Right Eye */}
-            <circle cx="288" cy="192" r="8" fill="white" />
+            <circle cx="288" cy="192" r="9" fill="white" />
             <motion.circle
-              cx={288 + eyePos.x * 3.8}
-              cy={192 + eyePos.y * 3.4}
-              r="4.2"
+              cx={288 + eyePos.x * 5.5}
+              cy={192 + eyePos.y * 5.0}
+              r="4.5"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -241,7 +241,7 @@ const LoginCharacters = ({
               ? { y: 2, scaleY: 0.95, opacity: 1 }
               : mood === 'success'
               ? { y: [0, -22, 0], scaleY: [1, 1.08, 1], opacity: 1 }
-              : { y: [0, -2.5, 0], scaleY: 1, opacity: 1 }
+              : { y: [0, -3, 0], scaleY: 1, x: eyePos.x * 5.0, opacity: 1 }
           }
           transition={
             mood === 'idle'
@@ -257,9 +257,9 @@ const LoginCharacters = ({
           <motion.g animate={{ x: orangeFaceX, y: orangeFaceY }} transition={{ duration: 0.1 }}>
             {/* Left Eye */}
             <motion.circle
-              cx={144 + eyePos.x * 3.4}
-              cy={295 + eyePos.y * 3.2}
-              r="5.5"
+              cx={144 + eyePos.x * 8.5}
+              cy={295 + eyePos.y * 6.5}
+              r="6"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -269,9 +269,9 @@ const LoginCharacters = ({
 
             {/* Right Eye */}
             <motion.circle
-              cx={196 + eyePos.x * 3.4}
-              cy={295 + eyePos.y * 3.2}
-              r="5.5"
+              cx={196 + eyePos.x * 8.5}
+              cy={295 + eyePos.y * 6.5}
+              r="6"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -317,7 +317,7 @@ const LoginCharacters = ({
               ? { y: 2, x: 0, opacity: 1 }
               : mood === 'success'
               ? { y: [0, -25, 0], opacity: 1 }
-              : { y: [0, -2, 0], opacity: 1 }
+              : { y: [0, -3, 0], rotate: eyePos.x * 3.5, x: eyePos.x * 6.0, opacity: 1 }
           }
           transition={
             mood === 'idle'
@@ -333,9 +333,9 @@ const LoginCharacters = ({
           <motion.g animate={{ x: yellowFaceX, y: yellowFaceY }} transition={{ duration: 0.1 }}>
             {/* Single Profile Eye */}
             <motion.circle
-              cx={304 + eyePos.x * 3.6}
-              cy={264 + eyePos.y * 3.2}
-              r="5.5"
+              cx={304 + eyePos.x * 8.0}
+              cy={264 + eyePos.y * 6.0}
+              r="6"
               fill="black"
               animate={{
                 scaleY: isBlinking || mood === 'success' ? 0.1 : 1,
@@ -357,9 +357,9 @@ const LoginCharacters = ({
                   ? { rotate: 16, originX: '322px', originY: '282px' }
                   : mood === 'success'
                   ? { rotate: -14, originX: '322px', originY: '282px' }
-                  : { rotate: 0 }
+                  : { rotate: eyePos.y * 6, originX: '322px', originY: '282px' }
               }
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
             />
           </motion.g>
         </motion.g>

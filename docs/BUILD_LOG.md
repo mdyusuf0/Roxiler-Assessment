@@ -672,3 +672,29 @@ feat(deploy): add automatic database initialization on server boot and /api/heal
 ```
 fix(routes): mount endpoints on both /api and root paths and auto-normalize frontend baseURL
 ```
+
+---
+
+### Step 25 — Enlarged Mascot Characters & Enhanced Cursor Sensitivity
+
+**What we improved:**
+- **Prominent Mascot Stage Sizing (`LoginCharacters.jsx`)**:
+  - Previously, `maxWidth: 460px` rendered the character quartet relatively small against large desktop viewports, leaving excessive empty space above.
+  - Increased stage width to `92%` and `maxWidth: 680px`, scaling up the SVG mascots by nearly 50% so they fill the lower visual half of the auth panel prominently as seen in the reference video.
+- **Enhanced Physics & High Cursor Sensitivity (`useCharacterMood.js` & `LoginCharacters.jsx`)**:
+  - **Dynamic Stage Origin**: Instead of normalizing mouse coordinates across the entire viewport (-1 to 1), vectors are now calculated relative to the characters' visual center (`window.innerWidth * 0.25`, `window.innerHeight * 0.72`). Movement across the screen toward the login form triggers maximum responsive tracking.
+  - **Snappier Lerp Tracking**: Increased physics interpolation rate from `0.12` to `0.18`, giving the characters an alert, instantaneous response to mouse sweeps without lag.
+  - **Amplified Motion Amplitudes**:
+    - Parallax face shift expanded from 4–6px up to 10–15px.
+    - Pupil travel radius expanded from ~3.5px up to 5.5–8.5px.
+    - Idle body lean and tilt increased from ~1.5° up to 4.5° with responsive skewing toward the cursor.
+    - Yellow character's beak now reacts dynamically to cursor vertical position.
+
+**Files changed:**
+- `client/src/components/LoginCharacters.jsx`
+- `client/src/hooks/useCharacterMood.js`
+
+**Commit message:**
+```
+style(mascots): enlarge characters and enhance cursor tracking sensitivity and range
+```

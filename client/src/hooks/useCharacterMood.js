@@ -47,13 +47,25 @@ export const useCharacterMood = () => {
       if (mood === 'email') {
         // Look towards the form on the right, modulated by typing caret progress
         const caretShift = (caretOffset - 0.5) * 0.4;
-        targetEye.current = { x: 0.85 + caretShift, y: 0.15 };
+        targetEye.current = { x: 0.9 + caretShift, y: 0.15 };
         return;
       }
 
-      // Idle mouse follow: normalize (-1 to 1) relative to viewport
-      const normX = (e.clientX / window.innerWidth) * 2 - 1;
-      const normY = (e.clientY / window.innerHeight) * 2 - 1;
+      // Idle mouse follow: compute vector relative to the character group's actual position
+      const isMobile = window.innerWidth <= 820;
+      const charCenterX = isMobile ? window.innerWidth * 0.5 : window.innerWidth * 0.25;
+      const charCenterY = isMobile ? window.innerHeight * 0.28 : window.innerHeight * 0.72;
+
+      const deltaX = e.clientX - charCenterX;
+      const deltaY = e.clientY - charCenterY;
+
+      // Higher sensitivity reach
+      const reachX = isMobile ? window.innerWidth * 0.4 : window.innerWidth * 0.32;
+      const reachY = isMobile ? window.innerHeight * 0.35 : window.innerHeight * 0.35;
+
+      const normX = deltaX / reachX;
+      const normY = deltaY / reachY;
+
       targetEye.current = {
         x: Math.max(-1, Math.min(1, normX)),
         y: Math.max(-1, Math.min(1, normY)),
@@ -64,9 +76,9 @@ export const useCharacterMood = () => {
 
     let animId;
     const updatePhysics = () => {
-      // Smooth lerp interpolation (factor 0.12)
-      currentEye.current.x += (targetEye.current.x - currentEye.current.x) * 0.12;
-      currentEye.current.y += (targetEye.current.y - currentEye.current.y) * 0.12;
+      // Snappier, highly alert lerp tracking factor (0.18)
+      currentEye.current.x += (targetEye.current.x - currentEye.current.x) * 0.18;
+      currentEye.current.y += (targetEye.current.y - currentEye.current.y) * 0.18;
 
       setEyePos({
         x: currentEye.current.x,
