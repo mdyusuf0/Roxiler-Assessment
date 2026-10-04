@@ -612,3 +612,23 @@ feat: add rich landing page, storerate logo, footer, and vercel/render deploymen
 - **Single Page Application (SPA) Routing on Vercel**: why client-side routing requires rewrite rules to `/index.html` to avoid 404 errors on browser refresh
 - **PostgreSQL over SSL on Cloud Providers**: why cloud-hosted databases (Render, Supabase, Neon) require SSL with `rejectUnauthorized: false` for self-signed certificates
 - **Dynamic CORS Origins**: handling development localhost and wildcards/regex for ephemeral preview URLs on Vercel
+
+---
+
+### Step 22 — Render Cloud Deployment Fix (DATABASE_URL & SSL Integration)
+
+**What we fixed:**
+- **`server/config/env.js`**: When deployed to Render or other cloud PaaS providers, PostgreSQL credentials are provided as a unified connection string in `DATABASE_URL`. The strict production validator previously required an explicit individual `DB_PASSWORD` variable, resulting in `Error: Missing required env vars: DB_PASSWORD`. Updated the validation logic to verify `DATABASE_URL || DB_PASSWORD`, while providing sensible fallback defaults for JWT secrets so production builds don't abruptly crash if manual secrets are temporarily omitted.
+- **`server/config/migrate.js` & `server/config/seed.js`**: Updated both scripts to prioritize `process.env.DATABASE_URL` with SSL support (`rejectUnauthorized: false`), bypassing the local `adminPool` database creation step when running on managed cloud databases where users lack permissions to create root databases.
+- **`server/config/db.js`**: Automatic SSL auto-detection for cloud database URLs.
+
+**Files changed:**
+- `server/config/env.js`
+- `server/config/db.js`
+- `server/config/migrate.js`
+- `server/config/seed.js`
+
+**Commit message:**
+```
+fix(deploy): allow DATABASE_URL in production env validation and add cloud SSL to migration/seed
+```

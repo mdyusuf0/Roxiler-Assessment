@@ -14,13 +14,22 @@ const { Pool } = require('pg');
 const env = require('./env');
 
 async function seed() {
-  const pool = new Pool({
-    host: env.db.host,
-    port: env.db.port,
-    database: env.db.name,
-    user: env.db.user,
-    password: env.db.password,
-  });
+  const poolConfig = process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.DATABASE_URL.includes('localhost')
+          ? false
+          : { rejectUnauthorized: false },
+      }
+    : {
+        host: env.db.host,
+        port: env.db.port,
+        database: env.db.name,
+        user: env.db.user,
+        password: env.db.password,
+      };
+
+  const pool = new Pool(poolConfig);
 
   try {
     // Clear existing data (respects FK order)

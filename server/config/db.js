@@ -4,7 +4,9 @@ const env = require('./env');
 const poolConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl: process.env.DATABASE_URL.includes('localhost')
+        ? false
+        : { rejectUnauthorized: false },
     }
   : {
       host: env.db.host,

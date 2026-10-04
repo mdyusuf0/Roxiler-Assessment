@@ -9,7 +9,32 @@ const { Pool } = require('pg');
 const env = require('./env');
 
 async function migrate() {
-  // First, connect to default 'postgres' DB to ensure our target DB exists
+  const schemaPath = path.resolve(__dirname, 'schema.sql');
+  const sql = fs.readFileSync(schemaPath, 'utf-8');
+
+  // If DATABASE_URL is set (e.g. Render, Supabase, Neon), connect directly and run schema
+  if (process.env.DATABASE_URL) {
+    console.log('📦 Connecting via DATABASE_URL to run schema migration...');
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes('localhost')
+        ? false
+        : { rejectUnauthorized: false },
+    });
+
+    try {
+      await pool.query(sql);
+      console.log('✅ Schema migration completed successfully');
+    } catch (err) {
+      console.error('❌ Migration failed:', err.message);
+      process.exit(1);
+    } finally {
+      await pool.end();
+    }
+    return;
+  }
+
+  // Local development: connect to default 'postgres' DB to ensure our target DB exists
   const adminPool = new Pool({
     host: env.db.host,
     port: env.db.port,
@@ -44,8 +69,6 @@ async function migrate() {
   });
 
   try {
-    const schemaPath = path.resolve(__dirname, 'schema.sql');
-    const sql = fs.readFileSync(schemaPath, 'utf-8');
     await appPool.query(sql);
     console.log('✅ Schema migration completed successfully');
   } catch (err) {
