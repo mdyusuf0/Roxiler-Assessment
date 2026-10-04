@@ -49,12 +49,19 @@ if (env.nodeEnv === 'development') {
   app.use(morgan('dev'));
 }
 
-// ── Routes ──────────────────────────────────────
+// ── Routes (mounted on both /api/* and root /* for client flexibility) ──
 app.use('/api/health', healthRoute);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/store-owner', storeOwnerRoutes);
+
+// Fallback mounts in case client baseURL omits /api
+app.use('/health', healthRoute);
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/user', userRoutes);
+app.use('/store-owner', storeOwnerRoutes);
 
 // ── 404 catch-all ───────────────────────────────
 app.use((req, res) => {

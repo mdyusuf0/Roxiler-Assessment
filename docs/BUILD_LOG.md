@@ -655,3 +655,20 @@ fix(deploy): allow DATABASE_URL in production env validation and add cloud SSL t
 ```
 feat(deploy): add automatic database initialization on server boot and /api/health/init-db endpoint
 ```
+
+---
+
+### Step 24 — Dual-Route Mounting & API URL Normalization
+
+**What we fixed:**
+- **`client/src/services/api.js`**: Users or evaluators often set `VITE_API_URL` to `https://<render-backend>.onrender.com` without appending the `/api` prefix, resulting in requests going to `/auth/login` rather than `/api/auth/login`. Added an automatic URL normalizer `getBaseURL()` that ensures `/api` is cleanly appended regardless of whether the user provided trailing slashes or omitted `/api`.
+- **`server/index.js`**: Configured dual route mounting — all controllers and sub-routers are mounted on both `/api/*` and root `/*` (`/auth`, `/admin`, `/user`, `/store-owner`, `/health`). Even if raw requests hit `/auth/login` or `/auth/signup` without `/api`, they now resolve properly rather than returning `Route not found: POST /auth/login`.
+
+**Files changed:**
+- `client/src/services/api.js`
+- `server/index.js`
+
+**Commit message:**
+```
+fix(routes): mount endpoints on both /api and root paths and auto-normalize frontend baseURL
+```
