@@ -698,3 +698,21 @@ fix(routes): mount endpoints on both /api and root paths and auto-normalize fron
 ```
 style(mascots): enlarge characters and enhance cursor tracking sensitivity and range
 ```
+
+---
+
+### Step 26 — Production Links in README & Clean Codebase Preparation
+
+**What we did:**
+- **Prominent Deployment Links in `README.md`**: Added a live deployment header at the top of the README featuring the verified production URLs for the Vercel frontend (`https://roxiler-assessment-black.vercel.app/`) and Render backend (`https://storerating-backend-368f.onrender.com`), along with a quick-reference table of pre-seeded test accounts for evaluators.
+- **Repository Cleanup for Submission**: Removed temporary reference assets (`Login page video.mp4`, `Screenshot...`, `Icons.webp`) and build artifacts (`client/dist`), leaving only clean, production-ready source code.
+- **Source Code Archive**: Generated a lightweight, clean ZIP archive containing pure source code without `node_modules`, build artifacts, or secret environment files.
+
+**Files changed:**
+- `README.md`
+- `docs/BUILD_LOG.md`
+
+**Commit message:**
+```
+docs: add live production deployment links and clean up repository for submission
+```

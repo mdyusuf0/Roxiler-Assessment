@@ -1,8 +1,32 @@
 # 🏪 StoreRate — Full Stack Store Rating Web Application
 
-A full-stack web application where users submit ratings (1 to 5) for registered stores, featuring a single unified authentication system with role-based access control, dark glassmorphic styling, interactive empathy doodle mascots, and a 60fps canvas cursor particle effect.
+> Built for the **Roxiler Systems Full Stack Developer Intern (FSDI) Assessment**.
 
-Built for the **Roxiler Systems Full Stack Developer Intern (FSDI) Assessment**.
+---
+
+## 🚀 Live Production Links (Instant Demo)
+
+### 🌐 **Live Web Application (Frontend on Vercel):**
+# 👉 [https://roxiler-assessment-black.vercel.app/](https://roxiler-assessment-black.vercel.app/)
+
+### ⚡ **Live Production API (Backend on Render):**
+# 👉 [https://storerating-backend-368f.onrender.com](https://storerating-backend-368f.onrender.com)
+*System Health Check:* [`https://storerating-backend-368f.onrender.com/api/health`](https://storerating-backend-368f.onrender.com/api/health)
+
+---
+
+### 🔑 Instant Demo Reviewer Accounts:
+| Role | Email | Password |
+|---|---|---|
+| 👑 **System Administrator** | `admin@storerating.com` | `Admin@123` |
+| 🏬 **Store Owner** | `owner@store1.com` | `Owner@123` |
+| 👤 **Normal User** | `user@example.com` | `User@1234` |
+
+*(Note: The login page includes 1-click quick-fill buttons to test any role instantly)*
+
+---
+
+A full-stack web application where users submit ratings (1 to 5) for registered stores, featuring a single unified authentication system with role-based access control, light frosted glassmorphism & neumorphism, interactive empathy cartoon mascots with physics cursor tracking, and a 60fps canvas cursor particle effect.
 
 ---
 
