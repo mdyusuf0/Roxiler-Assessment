@@ -84,7 +84,7 @@ _Will be populated as endpoints are built._
 
 | Method | Endpoint | Description | Auth | Role |
 | ------ | -------- | ----------- | ---- | ---- |
-| — | — | — | — | — |
+| GET | `/api/health` | Server health check | No | Any |
 
 ## How to Run
 
@@ -152,3 +152,79 @@ chore: scaffold project structure with gitignore, readme, and build log
 - **Environment variables**: why secrets should never be committed, how `.env` files work with `dotenv`
 - **`.gitignore` patterns**: how glob patterns match files and directories
 - **Separation of concerns**: why we split code into layers (routes, controllers, services, queries)
+
+---
+
+### Step 2 — Express server, config, error handler, health route
+
+**What we built:**
+A fully functional Express server with security middleware (Helmet, CORS), request logging (Morgan), a centralized config module that reads from `.env`, a custom `AppError` class, a global error handler with a consistent JSON response shape, and a `/api/health` endpoint.
+
+**Why we built it this way:**
+- **Config module (`config/env.js`)**: centralizes all environment variables in one place with defaults for dev and validation for production. Every other file imports `env` instead of reading `process.env` directly — single source of truth, easy to test.
+- **`AppError` class**: extends `Error` with a `statusCode` and `isOperational` flag. Operational errors (bad input, not found) get sent to the client. Non-operational errors (bugs) get a generic 500 message — this prevents leaking internal details.
+- **Consistent response shape `{ success, message, data }`**: every API response uses the same structure via `sendResponse()`. The frontend can always check `response.data.success` without guessing the format.
+- **Helmet**: sets security headers (CSP, X-Frame-Options, etc.) with one line.
+- **CORS with `credentials: true`**: needed later for httpOnly cookies (refresh tokens).
+- **Morgan in dev only**: avoids log noise in production.
+- **404 catch-all**: any request that doesn't match a route gets a clean JSON 404 instead of Express's default HTML error.
+
+**Files created or changed:**
+- `server/package.json` — cleaned up with `start` and `dev` scripts
+- `server/index.js` — Express app entry point, wires all middleware and routes
+- `server/config/env.js` — centralized env config with validation
+- `server/utils/AppError.js` — custom error class
+- `server/middleware/errorHandler.js` — global error handler + `sendResponse` utility
+- `server/routes/health.js` — `GET /api/health`
+- `.env` — local dev environment (gitignored)
+
+**Key code explained:**
+
+`config/env.js` — loads `.env` from the project root (one directory up from `/server`):
+```js
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+```
+This means both `server/` and `client/` can share the same `.env` file at the project root.
+
+`middleware/errorHandler.js` — the global error handler:
+```js
+const errorHandler = (err, req, res, _next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.isOperational ? err.message : 'Internal server error';
+  // ...
+};
+```
+Express recognises this as an error handler because it has **4 parameters** (`err, req, res, next`). If `err.isOperational` is false (a bug, not an expected error), it hides the real message from the client.
+
+`index.js` — order matters in Express middleware:
+```
+helmet → cors → body parsers → morgan → routes → 404 → errorHandler
+```
+Security headers first, then parsing, then logging, then routes. The error handler must be **last** because Express passes errors to the next middleware with 4 params.
+
+**How to test:**
+```bash
+cd server
+npm run dev
+
+# In another terminal:
+curl http://localhost:5000/api/health
+# → { "success": true, "data": { "status": "healthy", "uptime": 5, "timestamp": "..." } }
+
+curl http://localhost:5000/api/nonexistent
+# → { "success": false, "message": "Route not found: GET /api/nonexistent" }
+```
+
+**Commit message:**
+```
+feat(server): add express server with config, error handling, and health route
+```
+
+**Concepts to revise:**
+- **Express middleware pipeline**: how `app.use()` order determines execution flow
+- **Error-handling middleware**: why Express needs 4 parameters to recognize it
+- **Helmet**: what HTTP security headers it sets and why they matter
+- **CORS**: what cross-origin requests are and why browsers block them by default
+- **dotenv**: how `.env` files are loaded into `process.env`
+- **Operational vs programmer errors**: why you should distinguish between expected and unexpected failures
+
